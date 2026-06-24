@@ -61,6 +61,8 @@ enriched as (
         end                                     as tip_pct,
 
         -- airport zones: JFK (132), LaGuardia (138), Newark (1)
+        -- hardcoded for now — if this model ever needs to support other cities
+        -- or the TLC adds a new terminal zone, move these to a seed table
         case
             when trips.pu_location_id in (1, 132, 138)
               or trips.do_location_id in (1, 132, 138)

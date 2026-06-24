@@ -1,4 +1,5 @@
-# Copy this to ~/.dbt/profiles.yml and fill in your project.
+# Copy this to ~/.dbt/profiles.yml (or keep it in dbt/ as profiles.yml — setup.sh
+# generates it from this file automatically).
 # The real profiles.yml is gitignored so credentials never get committed.
 
 nyc_yellow_taxi:
@@ -7,7 +8,7 @@ nyc_yellow_taxi:
     dev:
       type: bigquery
       method: oauth
-      project: your-project-id
+      project: massive-network-500412-u2
       dataset: nyc_taxi
       location: US
       threads: 4

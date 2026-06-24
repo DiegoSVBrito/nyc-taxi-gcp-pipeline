@@ -16,6 +16,8 @@ bucketed as (
 
     select
         *,
+        -- bucket boundaries are somewhat arbitrary; chosen to roughly match
+        -- TLC's own short/medium/long classification and keep buckets readable
         case
             when trip_distance_miles < 1 then '0 to 1 mi'
             when trip_distance_miles < 3 then '1 to 3 mi'

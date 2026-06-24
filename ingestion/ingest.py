@@ -1,13 +1,10 @@
 """Ingest one month of NYC Yellow Taxi data into BigQuery.
 
-The flow is: download the monthly Parquet from the TLC source, stage it in a
-Cloud Storage landing bucket, then load it into the bronze table with a
-BigQuery load job.
+Downloads the monthly Parquet from the TLC source, stages it in GCS, then
+loads it into the bronze table with a BigQuery load job (which is free and
+does not count against the 1 TB query allowance).
 
-The operation is idempotent. Before loading a month, any existing rows for that
-month's partition are removed, so re-running the same month never produces
-duplicates. This is what lets the pipeline process new months as they arrive
-without reprocessing old data.
+Clears the month's partition before loading so re-runs don't duplicate rows.
 """
 
 import argparse
@@ -44,6 +41,8 @@ def validate_month(month: str) -> str:
 def download(month: str, local_path: str) -> None:
     url = SOURCE_URL.format(month=month)
     print(f"Downloading {url}")
+    # TODO: add a progress indicator here — the January file is ~50 MB and
+    # the download just hangs silently, which is confusing the first time you run it.
     with requests.get(url, stream=True, timeout=120) as response:
         response.raise_for_status()
         with open(local_path, "wb") as handle:
