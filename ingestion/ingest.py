@@ -44,6 +44,8 @@ def validate_month(month: str) -> str:
 def download(month: str, local_path: str) -> None:
     url = SOURCE_URL.format(month=month)
     print(f"Downloading {url}")
+    # TODO: add a progress indicator here — the January file is ~50 MB and
+    # the download just hangs silently, which is confusing the first time you run it.
     with requests.get(url, stream=True, timeout=120) as response:
         response.raise_for_status()
         with open(local_path, "wb") as handle:
