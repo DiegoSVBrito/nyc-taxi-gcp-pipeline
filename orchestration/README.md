@@ -17,23 +17,31 @@ this with the `TARGET_MONTH` env var for backfills.
 
 ## Deploy outline
 
+Project: `massive-network-500412-u2`, region: `us-central1`.
+
 ```bash
 # Build and push the image
-gcloud builds submit --tag gcr.io/${GCP_PROJECT}/nyc-taxi-daily orchestration/
+gcloud builds submit \
+  --tag gcr.io/massive-network-500412-u2/nyc-taxi-daily \
+  orchestration/
 
 # Create the Cloud Run Job
 gcloud run jobs create nyc-taxi-daily \
-  --image gcr.io/${GCP_PROJECT}/nyc-taxi-daily \
+  --image gcr.io/massive-network-500412-u2/nyc-taxi-daily \
   --region us-central1 \
-  --set-env-vars GCP_PROJECT=${GCP_PROJECT},GCS_BUCKET=${GCS_BUCKET},BQ_DATASET=nyc_taxi
+  --set-env-vars GCP_PROJECT=massive-network-500412-u2,\
+GCS_BUCKET=nyc-taxi-landing-massive-network-500412-u2,\
+BQ_DATASET=nyc_taxi
 
-# Schedule it daily
+# Schedule it daily at 6am UTC
+# Replace SCHEDULER_SA with the service account you create for the scheduler
 gcloud scheduler jobs create http nyc-taxi-daily-trigger \
   --schedule "0 6 * * *" \
-  --uri "https://${REGION}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${GCP_PROJECT}/jobs/nyc-taxi-daily:run" \
+  --location us-central1 \
+  --uri "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/massive-network-500412-u2/jobs/nyc-taxi-daily:run" \
   --http-method POST \
-  --oauth-service-account-email ${SCHEDULER_SA}
+  --oauth-service-account-email SCHEDULER_SA@massive-network-500412-u2.iam.gserviceaccount.com
 ```
 
-For an initial backfill, run `ingest.py` over the historical months once, then
-`dbt build` a single time, before enabling the schedule.
+For an initial backfill, loop `ingest.py` over the historical months first, then
+run `dbt build` once at the end before enabling the schedule.

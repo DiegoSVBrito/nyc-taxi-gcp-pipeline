@@ -2,8 +2,7 @@
 --
 -- These run directly against the gold marts in the BigQuery console. They are
 -- the same logic the marts expose, written as ready-to-run queries so the
--- findings can be reproduced without dbt. Replace `your-project-id` with your
--- project.
+-- findings can be reproduced without dbt.
 
 -- 1. Top 15 zone and hour combinations by earnings per working hour.
 --    Answers: where should the driver be, and when?
@@ -17,7 +16,7 @@ select
     trip_count,
     earnings_per_hour,
     avg_fare_per_trip
-from `your-project-id.nyc_taxi.earnings_by_zone_hour`
+from `massive-network-500412-u2.nyc_taxi.earnings_by_zone_hour`
 order by earnings_per_hour desc
 limit 15;
 
@@ -31,7 +30,7 @@ select
     avg_tip,
     avg_tip_pct,
     pct_trips_with_recorded_tip
-from `your-project-id.nyc_taxi.tipping_by_payment`
+from `massive-network-500412-u2.nyc_taxi.tipping_by_payment`
 order by trip_count desc;
 
 -- 3. Airport runs versus everything else.
@@ -42,7 +41,7 @@ select
     avg_total_per_trip,
     avg_duration_min,
     avg_dollars_per_minute
-from `your-project-id.nyc_taxi.airport_runs`
+from `massive-network-500412-u2.nyc_taxi.airport_runs`
 order by is_airport_trip desc;
 
 -- 4. Short versus long trips on dollars per minute.
@@ -53,7 +52,7 @@ select
     avg_total,
     avg_duration_min,
     avg_dollars_per_minute
-from `your-project-id.nyc_taxi.trip_efficiency`
+from `massive-network-500412-u2.nyc_taxi.trip_efficiency`
 order by avg_dollars_per_minute desc;
 
 -- 5. Best hours of the day overall, collapsing zone.
@@ -62,6 +61,6 @@ select
     pickup_hour,
     sum(trip_count)                                              as trips,
     round(sum(total_earnings) / nullif(sum(hours_worked), 0), 2) as earnings_per_hour
-from `your-project-id.nyc_taxi.earnings_by_zone_hour`
+from `massive-network-500412-u2.nyc_taxi.earnings_by_zone_hour`
 group by pickup_hour
 order by earnings_per_hour desc;

@@ -41,8 +41,8 @@ impossible trips live in the staging model and are documented in
 Locally, for backfill or development:
 
 ```bash
-export GCP_PROJECT="your-project-id"
-export GCS_BUCKET="nyc-taxi-landing-${GCP_PROJECT}"
+export GCP_PROJECT="massive-network-500412-u2"
+export GCS_BUCKET="nyc-taxi-landing-massive-network-500412-u2"
 export BQ_DATASET="nyc_taxi"
 
 python ingestion/load_zones.py          # once
