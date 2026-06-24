@@ -7,6 +7,9 @@
 
 -- 1. Top 15 zone and hour combinations by earnings per working hour.
 --    Answers: where should the driver be, and when?
+--    Note: the having clause (count >= 50) filters out zone-hour pairs with too few
+--    trips to be reliable. I tried lower thresholds and got some odd outliers —
+--    a single $200 trip at 3am in an obscure zone skewing the average badly.
 select
     pu_borough,
     pu_zone,
