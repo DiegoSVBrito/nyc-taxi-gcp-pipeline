@@ -1,53 +1,80 @@
-<svg width="100%" viewBox="0 0 680 600" xmlns="http://www.w3.org/2000/svg" role="img">
+<svg width="960" height="720" viewBox="0 0 960 720" xmlns="http://www.w3.org/2000/svg" role="img">
 <title>NYC Taxi GCP medallion architecture</title>
-<desc>Flow from GCS to BigQuery with bronze, silver, and gold layers, orchestrated by Cloud Scheduler and Cloud Run.</desc>
+<desc>Flow from TLC source through Cloud Storage and a BigQuery load job into bronze, silver, and gold layers, orchestrated daily by Cloud Scheduler and Cloud Run.</desc>
 <defs>
-<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#73726c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#73726c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
 </defs>
 <style>
-.t{font-family:sans-serif;font-size:14px;fill:#2c2c2a}
-.th{font-family:sans-serif;font-size:14px;font-weight:500;fill:#2c2c2a}
-.ts{font-family:sans-serif;font-size:12px;fill:#5f5e5a}
-.arr{stroke:#73726c;stroke-width:1.5;fill:none}
+  .orch { font-family: sans-serif; font-size: 15px; fill: #5f5e5a; }
+  .bh   { font-family: sans-serif; font-size: 17px; font-weight: 700; fill: #2c2c2a; }
+  .bs   { font-family: sans-serif; font-size: 13px; fill: #6b6a66; }
+  .sh   { font-family: sans-serif; font-size: 20px; font-weight: 700; fill: #2c2c2a; }
+  .sl   { font-family: sans-serif; font-size: 14px; fill: #5f5e5a; }
+  .arr  { stroke: #73726c; stroke-width: 2; fill: none; }
 </style>
 
-<text class="th" x="40" y="30">Orchestration: Cloud Scheduler (daily cron) to Cloud Run Job</text>
+<!-- Orchestration banner -->
+<rect x="0" y="0" width="960" height="46" rx="0" fill="#F5F4F0"/>
+<line x1="0" y1="46" x2="960" y2="46" stroke="#D8D6CE" stroke-width="1"/>
+<text class="orch" x="480" y="28" text-anchor="middle" dominant-baseline="middle">
+  Daily trigger: Cloud Scheduler (cron 0 6 * * *) → Cloud Run Job → ingestion + dbt build
+</text>
 
-<rect x="40" y="50" width="150" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
-<text class="th" x="115" y="76" text-anchor="middle">TLC source</text>
-<text class="ts" x="115" y="94" text-anchor="middle">Monthly Parquet</text>
+<!-- ── Ingestion row ── -->
 
-<rect x="250" y="50" width="160" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
-<text class="th" x="330" y="76" text-anchor="middle">GCS bucket</text>
-<text class="ts" x="330" y="94" text-anchor="middle">Landing per month</text>
+<!-- TLC source -->
+<rect x="20" y="62" width="228" height="92" rx="10" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+<text class="bh" x="134" y="100" text-anchor="middle">TLC source</text>
+<text class="bs" x="134" y="122" text-anchor="middle">Monthly Parquet file</text>
+<text class="bs" x="134" y="140" text-anchor="middle">d37ci6vzurychx.cloudfront.net</text>
 
-<rect x="470" y="50" width="170" height="56" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
-<text class="th" x="555" y="76" text-anchor="middle">BQ load job</text>
-<text class="ts" x="555" y="94" text-anchor="middle">Free, no slots</text>
+<!-- Arrow TLC → GCS -->
+<line x1="248" y1="108" x2="298" y2="108" class="arr" marker-end="url(#arrow)"/>
 
-<line x1="190" y1="78" x2="248" y2="78" class="arr" marker-end="url(#arrow)"/>
-<line x1="410" y1="78" x2="468" y2="78" class="arr" marker-end="url(#arrow)"/>
+<!-- Cloud Storage -->
+<rect x="300" y="62" width="228" height="92" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<text class="bh" x="414" y="100" text-anchor="middle">Cloud Storage</text>
+<text class="bs" x="414" y="122" text-anchor="middle">Landing bucket</text>
+<text class="bs" x="414" y="140" text-anchor="middle">yellow/year=YYYY/month=MM/</text>
 
-<rect x="40" y="160" width="600" height="90" rx="12" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
-<text class="th" x="64" y="188">Bronze: raw native table</text>
-<text class="ts" x="64" y="210">Partitioned by pickup date, schema 1:1 with the TLC source</text>
-<text class="ts" x="64" y="230">No transformation, faithful raw copy</text>
+<!-- Arrow GCS → BQ load -->
+<line x1="528" y1="108" x2="578" y2="108" class="arr" marker-end="url(#arrow)"/>
 
-<line x1="555" y1="106" x2="555" y2="158" class="arr" marker-end="url(#arrow)"/>
+<!-- BQ Load Job -->
+<rect x="580" y="62" width="228" height="92" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.2"/>
+<text class="bh" x="694" y="100" text-anchor="middle">BQ load job</text>
+<text class="bs" x="694" y="122" text-anchor="middle">Batch load from GCS</text>
+<text class="bs" x="694" y="140" text-anchor="middle">Free — no slots consumed</text>
 
-<rect x="40" y="290" width="600" height="100" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
-<text class="th" x="64" y="318">Silver: cleaned and enriched (incremental)</text>
-<text class="ts" x="64" y="340">dbt incremental by partition, filters outliers, derives earnings metrics</text>
-<text class="ts" x="64" y="360">Zone joins, dollars per mile and minute, tip percent, airport flags</text>
-<text class="ts" x="64" y="380">Partitioned by pickup date, clustered by pickup zone</text>
+<!-- Arrow: BQ load → bronze (L-shaped) -->
+<polyline points="694,154 694,210 480,210 480,228" class="arr" marker-end="url(#arrow)"/>
 
-<line x1="340" y1="250" x2="340" y2="288" class="arr" marker-end="url(#arrow)"/>
+<!-- ── BRONZE ── -->
+<rect x="20" y="230" width="920" height="118" rx="12" fill="#FAECE7" stroke="#993C1D" stroke-width="1.2"/>
+<text class="sh" x="50" y="268">BRONZE — raw</text>
+<text class="sl" x="50" y="298">Partitioned by pickup date, schema 1:1 with TLC source. No transformation.</text>
+<text class="sl" x="50" y="320">Faithful raw copy — any bug in downstream logic can be fixed by replaying from here.</text>
 
-<rect x="40" y="430" width="600" height="100" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
-<text class="th" x="64" y="458">Gold: aggregates for the earnings question</text>
-<text class="ts" x="64" y="480">earnings_by_zone_hour, tipping_by_payment, airport_runs, trip_efficiency</text>
-<text class="ts" x="64" y="500">Small pre-aggregated tables, driver queries cost near zero</text>
-<text class="ts" x="64" y="520">Materialized by dbt, consumed by BI or ad-hoc SQL</text>
+<!-- Arrow Bronze → Silver -->
+<line x1="480" y1="348" x2="480" y2="378" class="arr" marker-end="url(#arrow)"/>
 
-<line x1="340" y1="390" x2="340" y2="428" class="arr" marker-end="url(#arrow)"/>
+<!-- ── SILVER ── -->
+<rect x="20" y="380" width="920" height="138" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2"/>
+<text class="sh" x="50" y="418">SILVER — cleaned and enriched (incremental)</text>
+<text class="sl" x="50" y="448">dbt incremental model, insert_overwrite on pickup_date partition. Daily runs touch only new partitions.</text>
+<text class="sl" x="50" y="472">Drops invalid trips (bad duration, zero distance, negative fares, payment_type outside 1–6).</text>
+<text class="sl" x="50" y="496">Derives $/mile, $/min, tip_pct, is_airport_trip. Joins zone dimension on pickup and dropoff.</text>
+
+<!-- Arrow Silver → Gold -->
+<line x1="480" y1="518" x2="480" y2="548" class="arr" marker-end="url(#arrow)"/>
+
+<!-- ── GOLD ── -->
+<rect x="20" y="550" width="920" height="148" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="1.2"/>
+<text class="sh" x="50" y="588">GOLD — aggregated marts</text>
+<text class="sl" x="50" y="618">earnings_by_zone_hour · tipping_by_payment · airport_runs · trip_efficiency</text>
+<text class="sl" x="50" y="642">Pre-aggregated by dbt. Queries on these tables scan almost nothing and cost near zero.</text>
+<text class="sl" x="50" y="666">Consumed by driver earnings analysis queries (analysis/queries.sql).</text>
+
 </svg>
