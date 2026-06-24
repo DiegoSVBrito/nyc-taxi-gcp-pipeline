@@ -16,7 +16,7 @@ by BigQuery standards, and it drives every decision below.
 
 | Concern | Choice | Reason |
 | --- | --- | --- |
-| Storage and compute | BigQuery | Serverless, no cluster to keep running, generous free tier (1 TB query/month, 10 GB storage). |
+| Storage and compute | BigQuery | Serverless and columnar — scales to petabytes without cluster management, and partitioning keeps query costs flat as history grows. Free tier covers most of the current workload as a side effect. |
 | Landing zone | Cloud Storage | Cheap durable staging for the raw Parquet before load. |
 | Ingestion | BigQuery load jobs | Batch loads from GCS are free. They do not consume slots or the 1 TB query allowance. |
 | Transformation | dbt on BigQuery | All compute stays inside BigQuery. dbt adds lineage, tests, and native incremental models. No external engine. |
@@ -39,7 +39,7 @@ if this pipeline grew to dozens of interdependent DAGs — not for this.
 
 ## Architecture
 
-The data flows through three layers, following a medallion pattern.
+Three layers — bronze keeps the raw source intact, silver cleans and enriches, gold aggregates for the earnings analysis.
 
 ```
 TLC source (Parquet, monthly)
@@ -108,7 +108,7 @@ Prerequisites: a GCP project with billing enabled and `gcloud` installed.
 On macOS or Linux:
 
 ```bash
-cp .env.example .env        # values are pre-filled; edit if needed
+cp .env.example .env        # GCP_PROJECT is already set — update if yours differs
 source .env
 ./setup.sh 2023-01
 ```
@@ -119,9 +119,7 @@ On Windows PowerShell:
 .\setup.ps1 -Month 2023-01
 ```
 
-Both scripts are idempotent. They enable the APIs, create the bucket and dataset,
-prepares a Python virtual environment, loads the zone dimension, ingests the
-month, and runs `dbt build`. Re-running it is safe.
+Both scripts check for existing resources before creating, so re-running is safe.
 
 ### Manual steps
 
