@@ -25,6 +25,15 @@ include negative billable trips.
 bounded the accepted range to 0 through 8; nulls are allowed through because the
 field is not central to the earnings question.
 
+**Invalid payment type codes.** The TLC codebook defines payment_type values
+1 through 6. When I ran `dbt build` the first time, the `accepted_values` test
+on the staging model failed — 64,103 rows in the January 2023 source carry
+payment_type=0, which is not a valid code. These rows have otherwise normal
+fares and durations, so they are likely a meter or export artifact rather than
+test rides or cancellations. I dropped them in the staging filter rather than
+keeping them with an unknown payment label, since the tipping mart groups by
+payment method and an "unknown" bucket would just muddy the result.
+
 **The cash tip gap.** This is the most important quality issue and it is not
 fixed by filtering, because the data is technically correct. Cash tips are not
 recorded by the meter, so cash trips show near-zero tips. Removing or imputing

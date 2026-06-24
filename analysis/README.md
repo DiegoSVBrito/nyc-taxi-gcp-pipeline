@@ -1,55 +1,91 @@
 # Findings: advice to a new driver
 
-These are the conclusions the queries support. Run `queries.sql` against the
-gold marts to reproduce the numbers. The exact figures depend on the month
-loaded; the patterns below hold across the data and are what a driver should
-act on.
+Numbers below are from the January 2023 data (3,066,766 trips after cleaning).
+Run `queries.sql` against the gold marts to reproduce them.
 
 ## 1. Think in dollars per hour, not dollars per trip
 
-The instinct of a new driver is to chase big fares. The data says to chase the
-best rate per working hour instead. A single long trip can pay a large fare
-while tying up forty minutes and ending far from the next rider. Several short
-trips in a dense zone can earn more over the same forty minutes and keep the
-driver where demand is. Query 1 ranks zone and hour combinations by earnings
-per hour, which is the number that actually fills a shift.
+This reframe is the most useful thing I got out of the analysis. The instinct
+is to chase big fares — airport runs, long crosstown trips. But when you rank
+zone-hour combinations by earnings per working hour, a different picture shows
+up.
+
+The top of the list is almost entirely Flushing Meadows-Corona Park in Queens,
+evening hours. Hour 23 there returns $262.75 per hour across 98 trips. That is
+not a fluke — the zone sits next to Citi Field and the USTA tennis center, and
+event traffic drives consistent demand from 19h onward. A driver who knows to
+be there at 10pm on a weeknight will earn more per hour than one chasing the
+occasional $70 airport fare.
+
+The per-hour framing also catches something the per-trip average hides: a long
+trip that ends in a dead zone has a hidden cost. You stop earning the moment you
+drop off, and if the next pickup is twenty minutes away, the clock was running
+against you.
 
 ## 2. The cash tip trap
 
-Cash trips show almost no tips in the data. A driver who trusts the raw number
-would start avoiding cash riders. That would be a mistake. Cash tips are handed
-over physically and never entered into the meter, so they are invisible to the
-dataset, not absent in reality. Query 2 makes this explicit through
-`pct_trips_with_recorded_tip`, which sits near zero for cash and high for card.
-The real lesson is about the limits of the data: judge tipping by card trips,
-and do not read the cash gap as rider behavior.
+When I first looked at the tipping query, cash trips showed $0.00 average tip
+across 513,185 rides. That felt too clean to be real. It is.
 
-## 3. Airport runs are a time tradeoff, not free money
+Cash tips are physically handed to the driver and never entered into the meter,
+so the TLC system simply does not see them. The `pct_trips_with_recorded_tip`
+column makes this obvious: 96% of card trips have a recorded tip, 0% of cash
+trips do. The fares are nearly identical ($18.51 for cash vs $18.47 for card),
+so there is no evidence that cash riders are worse customers — just that their
+tips are invisible to the dataset.
 
-Airport pickups carry a high fare per trip, which makes them look like the best
-work available. Query 3 reframes them by time. Once duration is counted, the
-per-minute rate on airport runs is often unremarkable, and that is before
-accounting for the empty return trip that airport drop-offs usually force. The
-advice is not to refuse airport work but to treat it as a round trip when
-deciding whether it beats staying in a busy zone.
+A driver who reads the raw average and starts steering toward card riders only
+is optimizing against a recording gap, not reality.
 
-## 4. Short hops can win on rate
+## 3. Airport runs: better than average, not as good as they look
 
-Query 4 buckets trips by distance and compares dollars per minute. The base
-charge on the meter is spread over less time on short trips, so the shortest
-buckets frequently show the strongest per-minute rate. A driver optimizing for
-a full shift should not look down on short fares.
+Airport trips average $74.54 with a $2.51 per-minute rate, versus $21.95 and
+$2.07 for everything else. That premium is real. But it only counts the trip in.
 
-## 5. A simple shift window
+Most airport drop-offs end in a holding queue or an empty return to the city.
+Neither of those minutes earns anything, and the data does not capture them.
+If the queue at JFK is forty minutes, the effective per-minute rate on that
+$75 trip drops closer to the city average once you account for the dead time.
 
-For a driver who just wants to know when to work rather than where, query 5
-collapses zone and ranks hours of the day by earnings per hour. It gives a plain
-answer to "what hours should I drive" without the zone detail.
+The question before accepting an airport run is not "is $74 a good fare" but
+"what does the next hour look like after I drop off." If the queue is short and
+there is pickup demand near the airport, it is worth it. If not, staying in a
+dense zone is probably better.
 
-## How to use this
+## 4. Short trips pay better per minute than long ones
 
-A new driver does not need all five views at once. The practical routine: pick a
-shift window from query 5, position in a high rate-per-hour zone from query 1,
-take short and medium trips freely, treat airport runs as round trips before
-accepting them, and ignore the cash tip column entirely when judging where the
-money is.
+This one surprised me. Trips under one mile return $2.88 per minute on average.
+The 1-3 mile bucket — the most common, with 1.4 million trips — returns $1.88.
+The 3-6 mile bucket is last at $1.68.
+
+The mechanism is simple: the base fare and minimum charge are spread over less
+time on a short trip, so the meter starts at a high effective rate and the ride
+ends before the per-mile rate has time to pull it down. A driver who refuses
+short fares to hold out for longer ones is giving up the most efficient part
+of the rate structure.
+
+## 5. When to drive
+
+If location is fixed, the hours matter a lot. The top of the hour ranking:
+
+| Hour | $/hr |
+| --- | --- |
+| 5am | $155.53 |
+| 4am | $142.58 |
+| 3am | $130.17 |
+| 11pm | $128.89 |
+| 6am | $128.39 |
+
+Early morning is not high-volume but competition is low and the trips that do
+come — airport runs, late-shift workers, bar close — tend to pay well. The
+19-23h window has much higher volume at only slightly lower rates, so it is
+probably the better choice for a full shift. Midday (11am-4pm) is consistently
+the weakest window.
+
+## What I'd do with more time
+
+The zone-hour mart covers January. I would want to see whether Flushing Meadows
+is consistently at the top or whether it is driven by a specific event in that
+month. The USTA Open is in August-September, Citi Field has a full baseball
+season — the rankings likely shift across months and I would not tell a driver
+to camp there year-round without checking a few more months of data first.
