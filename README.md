@@ -95,22 +95,29 @@ nyc-yellow-taxi-gcp/
 
 ## How to run
 
-Prerequisites: a GCP project with BigQuery and Cloud Storage enabled, and
-`gcloud` authenticated locally.
+Prerequisites: a GCP project with billing enabled and `gcloud` installed.
+
+### Quick start
 
 ```bash
-# 1. Set your project and create the landing bucket + dataset
-export GCP_PROJECT="your-project-id"
-export GCS_BUCKET="nyc-taxi-landing-${GCP_PROJECT}"
-export BQ_DATASET="nyc_taxi"
+cp .env.example .env        # values are pre-filled; edit if needed
+source .env
+./setup.sh 2023-01
+```
 
-# 2. Ingest one month (idempotent, safe to re-run)
+`setup.sh` is idempotent. It enables the APIs, creates the bucket and dataset,
+prepares a Python virtual environment, loads the zone dimension, ingests the
+month, and runs `dbt build`. Re-running it is safe.
+
+### Manual steps
+
+If you prefer to run each stage yourself:
+
+```bash
+source .env
+
+python ingestion/load_zones.py          # once
 python ingestion/ingest.py --month 2023-01
-
-# 3. Load the zone lookup dimension once
-python ingestion/load_zones.py
-
-# 4. Build the models
 cd dbt && dbt build
 ```
 
