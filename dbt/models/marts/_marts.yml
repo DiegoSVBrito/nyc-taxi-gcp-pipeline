@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: earnings_by_zone_hour
+    description: Earnings per working hour by pickup zone and hour of day.
+    columns:
+      - name: earnings_per_hour
+        tests:
+          - not_null
+
+  - name: tipping_by_payment
+    description: >
+      Tipping behavior by payment method. The recorded tip share for cash is
+      expected to be near zero because cash tips are not entered into the meter.
+
+  - name: airport_runs
+    description: Airport versus non-airport trips compared on time efficiency.
+
+  - name: trip_efficiency
+    description: Dollars per minute across distance buckets.

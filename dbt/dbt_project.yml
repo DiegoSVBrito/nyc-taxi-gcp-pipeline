@@ -1,0 +1,23 @@
+name: "nyc_yellow_taxi"
+version: "1.0.0"
+config-version: 2
+
+profile: "nyc_yellow_taxi"
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  nyc_yellow_taxi:
+    staging:
+      +materialized: incremental
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

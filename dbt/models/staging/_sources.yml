@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('GCP_PROJECT', 'your-project-id') }}"
+    schema: nyc_taxi
+    tables:
+      - name: bronze_yellow_taxi
+        description: >
+          Raw Yellow Taxi trips loaded one month at a time, partitioned by
+          pickup datetime. One row per trip, matching the TLC source schema.
+      - name: dim_taxi_zone
+        description: >
+          Static lookup mapping LocationID to borough, zone, and service zone.
