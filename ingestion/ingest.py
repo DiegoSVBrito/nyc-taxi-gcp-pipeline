@@ -13,6 +13,7 @@ without reprocessing old data.
 import argparse
 import os
 import sys
+import tempfile
 from datetime import datetime
 
 import requests
@@ -105,7 +106,10 @@ def main() -> None:
     args = parser.parse_args()
 
     month = validate_month(args.month)
-    local_path = f"/tmp/yellow_tripdata_{month}.parquet"
+    # Use the OS temp dir so this works on Windows as well as Linux/macOS.
+    local_path = os.path.join(
+        tempfile.gettempdir(), f"yellow_tripdata_{month}.parquet"
+    )
 
     download(month, local_path)
     gcs_uri = stage_to_gcs(month, local_path)
