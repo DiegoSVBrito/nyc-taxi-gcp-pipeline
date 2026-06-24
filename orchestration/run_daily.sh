@@ -7,8 +7,8 @@
 
 set -euo pipefail
 
-: "${GCP_PROJECT:?GCP_PROJECT must be set}"
-: "${GCS_BUCKET:?GCS_BUCKET must be set}"
+: "${GCP_PROJECT:=massive-network-500412-u2}"
+: "${GCS_BUCKET:=nyc-taxi-landing-massive-network-500412-u2}"
 : "${BQ_DATASET:=nyc_taxi}"
 
 # TLC data lags real time, so load the month two months back by default.

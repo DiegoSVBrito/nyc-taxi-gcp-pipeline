@@ -68,8 +68,8 @@ python ingestion/ingest.py --month "${MONTH}"
 echo "Step 8: build dbt models"
 cd dbt
 if [ ! -f profiles.yml ]; then
-    sed "s/your-project-id/${GCP_PROJECT}/" profiles.example.yml > profiles.yml
-    echo "  generated dbt/profiles.yml from the example"
+    cp profiles.example.yml profiles.yml
+    echo "  copied dbt/profiles.yml from the example"
 fi
 DBT_PROFILES_DIR="$(pwd)" dbt build
 cd ..

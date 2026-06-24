@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    database: "{{ env_var('GCP_PROJECT', 'your-project-id') }}"
+    database: "{{ env_var('GCP_PROJECT', 'massive-network-500412-u2') }}"
     schema: nyc_taxi
     tables:
       - name: bronze_yellow_taxi

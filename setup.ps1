@@ -91,8 +91,8 @@ python ingestion\ingest.py --month $Month
 Write-Host "Step 8: build dbt models"
 Push-Location dbt
 if (-not (Test-Path "profiles.yml")) {
-    (Get-Content profiles.example.yml) -replace "your-project-id", $GcpProject | Set-Content profiles.yml
-    Write-Host "  generated dbt\profiles.yml from the example"
+    Copy-Item profiles.example.yml profiles.yml
+    Write-Host "  copied dbt\profiles.yml from the example"
 }
 $env:DBT_PROFILES_DIR = (Get-Location).Path
 dbt build
