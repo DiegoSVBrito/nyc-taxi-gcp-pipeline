@@ -27,8 +27,15 @@ Write-Host ""
 
 Write-Host "Step 1: confirm gcloud auth and project"
 gcloud config set project $GcpProject | Out-Null
+
+# Probe ADC without aborting: under $ErrorActionPreference=Stop the gcloud PS
+# wrapper turns a non-zero exit into a terminating error, which would skip the
+# login fallback. Relax the preference for the probe, then branch on the exit.
+$ErrorActionPreference = "Continue"
 gcloud auth application-default print-access-token 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$noAdc = $LASTEXITCODE -ne 0
+$ErrorActionPreference = "Stop"
+if ($noAdc) {
     Write-Host "No application-default credentials found. Running login..."
     gcloud auth application-default login
 }
@@ -37,16 +44,24 @@ Write-Host "Step 2: enable required APIs (idempotent)"
 gcloud services enable bigquery.googleapis.com storage.googleapis.com | Out-Null
 
 Write-Host "Step 3: create the GCS landing bucket if missing"
+# Same Stop-mode caveat as Step 1: the "not found" from the existence probe is
+# raised as a terminating error, which would abort before the create branch.
+$ErrorActionPreference = "Continue"
 gcloud storage buckets describe "gs://$GcsBucket" 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$bucketMissing = $LASTEXITCODE -ne 0
+$ErrorActionPreference = "Stop"
+if ($bucketMissing) {
     gcloud storage buckets create "gs://$GcsBucket" --location=$BqLocation --uniform-bucket-level-access
 } else {
     Write-Host "  bucket already exists"
 }
 
 Write-Host "Step 4: create the BigQuery dataset if missing"
+$ErrorActionPreference = "Continue"
 bq --location=$BqLocation show "${GcpProject}:${BqDataset}" 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$datasetMissing = $LASTEXITCODE -ne 0
+$ErrorActionPreference = "Stop"
+if ($datasetMissing) {
     bq --location=$BqLocation mk --dataset "${GcpProject}:${BqDataset}"
 } else {
     Write-Host "  dataset already exists"
