@@ -24,12 +24,18 @@ by BigQuery standards, and it drives every decision below.
 
 ### What was deliberately avoided
 
-Dataflow and Dataproc were considered and rejected. They bill for workers by the
-hour, and a daily job processing only one new month (around 3 million rows) would
-leave compute running for a workload that BigQuery handles in seconds for free.
-Cloud Composer was also rejected for the same reason: its environment runs
-continuously and costs roughly 300 USD per month on its own, which is not
-justified for a single daily trigger.
+Dataflow and Dataproc were the obvious first candidates and I spent some time
+looking at both. The problem is that they bill for workers by the hour. A daily
+job processing one new month — roughly 3 million rows — would spin up a cluster,
+finish in a few minutes, and leave compute running for a workload that BigQuery
+handles for free as a load job. The math does not work at this scale.
+
+Cloud Composer was the other temptation. It is the "proper" orchestration answer
+and I use it at work for larger pipelines. But its environment runs continuously
+regardless of how often your DAG fires, and the base cost is around 300 USD per
+month before you run a single task. For one daily trigger, Cloud Scheduler and
+a Cloud Run Job do the same job for pennies. Composer would be the right call
+if this pipeline grew to dozens of interdependent DAGs — not for this.
 
 ## Architecture
 
@@ -134,14 +140,15 @@ Detailed setup and the production scheduling notes live in
 
 ## Findings
 
-The full advice to the driver, backed by query results, is in
-`analysis/README.md`. The headline insights:
+The full analysis is in `analysis/README.md`. A few things that stood out:
 
-- Earnings per working hour matter more than earnings per trip. A long airport
-  run can pay less per hour than fast turnover in a dense zone once the empty
-  return trip is counted.
-- Cash trips appear to tip almost nothing. This is a reporting artifact, not
-  driver behavior: cash tips are not recorded in the system. Reading the raw
-  number would mislead a driver into avoiding cash riders.
-- Airport pickups pay well per trip but the dead-heading return depresses the
-  hourly rate. The runs are worth modeling as a round trip, not a single leg.
+- Flushing Meadows-Corona Park in Queens dominates the top zone-hour rankings,
+  returning over $260/hr at peak evening hours. I did not expect a Queens zone
+  to beat Midtown this consistently — it is driven by event venues, not general
+  density.
+- The cash tip column reads zero for 513,185 trips. That is not rider behavior,
+  it is a recording gap: cash tips never touch the meter. A driver who acts on
+  that number is optimizing against a data artifact.
+- Short trips under one mile return $2.88 per minute — the highest rate in the
+  dataset, better than long trips and better than airport runs once wait time
+  is counted. This one surprised me most.

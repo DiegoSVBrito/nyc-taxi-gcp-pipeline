@@ -61,3 +61,19 @@ once at the end.
 - The job derives the month to load from the run date, so no manual parameter
   is needed in the scheduled path. The `--month` flag stays available for
   backfills and reruns.
+
+## Limitations and what I would do differently
+
+The orchestration here is intentionally minimal — one cron, one container, no
+retry logic beyond what Cloud Run provides by default. For a real production
+pipeline I would want proper alerting (a Slack or PagerDuty hook on job
+failure), a more explicit backfill interface, and probably a lightweight
+orchestrator like Prefect or Dagster once the number of steps grows past three
+or four. Cloud Composer would be overkill at this scale but Prefect Cloud's
+free tier would not add meaningful cost.
+
+The zone dimension is also loaded once and treated as static. In practice the
+TLC does update the zone lookup occasionally — new zones appear, names change.
+A more complete pipeline would version the dimension or at least check for
+updates periodically instead of assuming the CSV from the initial load is
+current.
