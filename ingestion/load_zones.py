@@ -1,12 +1,10 @@
 """Load the taxi zone lookup table once as a dimension.
 
-The lookup maps LocationID to borough, zone, and service zone. It is small
-(around 265 rows) and static, so it is loaded a single time and joined in the
-silver layer to turn numeric zone ids into human-readable locations.
+Maps LocationID to borough, zone, and service zone (~265 rows, rarely changes).
+Run this once before the first ingest — it does not need to run daily.
 
-BigQuery load jobs cannot read directly from an https URL, so the CSV is staged
-in the same GCS landing bucket as the trip data before being loaded. This keeps
-all raw/landing bytes in one durable place and matches the bronze ingest path.
+Note: BigQuery load jobs won't accept an https:// source directly, so the CSV
+has to be staged in GCS first. Learned that the hard way.
 """
 
 import os

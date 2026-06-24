@@ -1,13 +1,10 @@
 """Ingest one month of NYC Yellow Taxi data into BigQuery.
 
-The flow is: download the monthly Parquet from the TLC source, stage it in a
-Cloud Storage landing bucket, then load it into the bronze table with a
-BigQuery load job.
+Downloads the monthly Parquet from the TLC source, stages it in GCS, then
+loads it into the bronze table with a BigQuery load job (which is free and
+does not count against the 1 TB query allowance).
 
-The operation is idempotent. Before loading a month, any existing rows for that
-month's partition are removed, so re-running the same month never produces
-duplicates. This is what lets the pipeline process new months as they arrive
-without reprocessing old data.
+Clears the month's partition before loading so re-runs don't duplicate rows.
 """
 
 import argparse

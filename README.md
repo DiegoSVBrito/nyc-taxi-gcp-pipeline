@@ -62,15 +62,15 @@ See `docs/data_model.md` for the full layer and schema description.
 
 ## Incremental design
 
-The pipeline never reprocesses old data. Two mechanisms guarantee this:
+The pipeline does not reprocess old data. On ingestion, any existing rows for
+the target month are cleared before the new load — so re-running a month is
+safe and produces no duplicates. On the dbt side, the silver model uses
+`insert_overwrite` on the `pickup_date` partition, which means a daily run
+only touches partitions for data that actually changed. Old months are left
+alone.
 
-1. **Ingestion is idempotent per month.** Before loading a month, the loader
-   removes any existing rows for that month's partition, then appends. Running
-   the same month twice produces the same result, never duplicates.
-2. **Transformations are incremental.** The silver model uses dbt's
-   `insert_overwrite` strategy on the `pickup_date` partition. A daily run only
-   touches the partitions for newly arrived data. Old partitions are left
-   untouched, which keeps both cost and runtime flat as history grows.
+This matters more as history grows. Running month 60 should cost the same as
+running month 2, and with this setup it does.
 
 ## Rough monthly cost in production (5 years, daily runs)
 

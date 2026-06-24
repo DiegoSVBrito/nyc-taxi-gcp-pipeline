@@ -11,13 +11,11 @@
     )
 }}
 
--- Clean and type the raw trips. This is the first place data quality is
--- enforced. Anything that cannot represent a real, billable trip is filtered
--- out here so downstream models can trust the rows.
+-- Clean and type the raw trips. Filters out anything that can't be a real
+-- billable ride — zero durations, absurd distances, negative fares, invalid
+-- payment codes. See docs/data_quality.md for the full list and reasoning.
 --
--- The model is incremental: on a normal run it only reads partitions newer
--- than what is already built, and insert_overwrite rewrites just those
--- partitions. Old data is never touched.
+-- Incremental on pickup_date so daily runs only process new partitions.
 
 with source as (
 

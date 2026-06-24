@@ -1,10 +1,13 @@
 # Orchestration
 
-The daily pipeline runs as a Cloud Run Job triggered by Cloud Scheduler. This
-pairing was chosen over Cloud Composer because the workload is a single short
-daily task. Composer keeps an environment running continuously at roughly 300
-USD per month, which is not justified here. Scheduler plus a Cloud Run Job costs
-close to nothing because it bills only for the seconds the job runs.
+The daily pipeline runs as a Cloud Run Job triggered by Cloud Scheduler.
+Simple setup — one cron, one container. Composer was the other option but
+it keeps an environment running 24/7 regardless of how often your DAG fires,
+and the base cost (~$300/mo) is hard to justify for a single daily trigger.
+
+One thing to know: the `run_daily.sh` script loads the month two months back
+by default, because TLC data typically lags by 4-6 weeks. You can override
+this with the `TARGET_MONTH` env var for backfills.
 
 ## Files
 
