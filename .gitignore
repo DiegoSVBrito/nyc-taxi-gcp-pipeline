@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.python-version
+
+# Environment and secrets
+.env
+*.env
+service-account*.json
+gcp-key*.json
+credentials.json
+
+# dbt
+target/
+dbt_packages/
+logs/
+.dbt/
+
+# Data files (never commit raw data)
+data/
+*.parquet
+*.csv
+!seeds/*.csv
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local config
+profiles.yml
