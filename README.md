@@ -99,13 +99,21 @@ Prerequisites: a GCP project with billing enabled and `gcloud` installed.
 
 ### Quick start
 
+On macOS or Linux:
+
 ```bash
 cp .env.example .env        # values are pre-filled; edit if needed
 source .env
 ./setup.sh 2023-01
 ```
 
-`setup.sh` is idempotent. It enables the APIs, creates the bucket and dataset,
+On Windows PowerShell:
+
+```powershell
+.\setup.ps1 -Month 2023-01
+```
+
+Both scripts are idempotent. They enable the APIs, create the bucket and dataset,
 prepares a Python virtual environment, loads the zone dimension, ingests the
 month, and runs `dbt build`. Re-running it is safe.
 
