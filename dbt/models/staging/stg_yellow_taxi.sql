@@ -66,6 +66,10 @@ cleaned as (
         and total_amount >= 0
         -- keep only plausible passenger counts
         and (passenger_count is null or passenger_count between 0 and 8)
+        -- drop trips whose payment type is not a real TLC code (1-6). A value of
+        -- 0 is a meter/recording error; keeping it would trip the accepted_values
+        -- test and cannot map to a real payment method downstream.
+        and payment_type between 1 and 6
 
 )
 
